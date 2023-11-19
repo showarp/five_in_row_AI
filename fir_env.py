@@ -8,15 +8,9 @@ import os
 import random
 
 
-
 class FiveInRowEnv(gym.Env,FirInRowGame):
     def __init__(self,render_mode=None):
-        self.BOARD_CHANNEL = 0
-        self.INDICATOR_CHANNEL = 1
-        self.INVALID_CHANNEL = 2
-
-
-        self.chess_board = np.zeros((3, 15, 15),dtype=np.uint8)
+        FirInRowGame.__init__(self)
         self.now_player = True
         self.step_log = [[None,None],[None,None]]
         self.now_down = [None,None]
@@ -24,10 +18,6 @@ class FiveInRowEnv(gym.Env,FirInRowGame):
 
         self.observation_space = spaces.Box(0,255,(3,37,37),dtype=np.uint8)
         self.action_space = spaces.Box(-1,1,(2,15))
-
-    def check_chess_valid(self,x,y):
-        y = self.__parser_y__(y)
-        return self.chess_board[self.BOARD_CHANNEL,x,y]==0 and 15>x>=0 and 15>y>=0
 
     def random_think(self):
         invalid_board = self.chess_board[self.INVALID_CHANNEL]
@@ -71,7 +61,7 @@ class FiveInRowEnv(gym.Env,FirInRowGame):
     
     def render(self):
             os.system('cls' if os.name == 'nt' else 'clear')
-            print(self)
+            print(FirInRowGame.__str__(self))
             print(f"当前轮到:{'Black' if self.now_player else 'White'}")
             x,y = self.__get_info()["step_log"][-2]
             y = " None" if y==None else chr(ord("A")+y)
@@ -83,15 +73,11 @@ class FiveInRowEnv(gym.Env,FirInRowGame):
     
     def step(self, action: Any) -> Tuple[Any, float, bool, bool, dict]:
         x,y = action[0].argmax(),action[1].argmax()
-        is_valide = True
         done = self.__get_done()
-        if self.now_player:
-            is_valide = self.down_black_chess(x,y)
-        else:
-            is_valide = self.down_white_chess(x,y)
+        is_valid = self.play(x,y)
         obs = self.__get_obs()
-        reward = self.__get_reward(not self.now_player) if is_valide else -4320
+        reward = self.__get_reward(not self.now_player) if is_valid else -4320
         Terminated = False
         info = self.__get_info()
-        if is_valide:self.random_think()
+        if is_valid:self.random_think()
         return obs,reward,done,Terminated,info

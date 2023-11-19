@@ -1,4 +1,4 @@
-from stable_baselines3 import PPO
+# from stable_baselines3 import PPO
 from gymnasium.envs.registration import register
 import gymnasium as gym
 from fir_env import FiveInRowEnv
@@ -15,13 +15,13 @@ register(
     entry_point="fir_env:FiveInRowEnv"
 )
 env = gym.make("five_in_roll-v0")
-model = PPO(    
-    "CnnPolicy", 
-    env,
-    device="cuda")
+# model = PPO(    
+#     "CnnPolicy", 
+#     env,
+#     device="cuda")
 
 
-model = model.load('./checkpoint/ppo_FIR_40000_steps.zip')
+# model = model.load('./checkpoint/ppo_FIR_40000_steps.zip')
 
 for i in range(1):
     state,info = env.reset()
@@ -40,7 +40,8 @@ for i in range(1):
             # action, _ = model.predict(observation=state)
         # # s+=1
         # action = env.action_space.sample()
-        action, _ = model.predict(observation=state)
+        # action, _ = model.predict(observation=state)
+        action = env.action_space.sample()
         obs,reward,done,Terminated,info = env.step(action)
         env.render()
         print(reward)

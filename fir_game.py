@@ -35,6 +35,10 @@ class FirInRowGame:
         else:
             return y
         
+    def check_chess_valid(self,x,y):
+        y = self.__parser_y__(y)
+        return self.chess_board[self.BOARD_CHANNEL,x,y]==0 and 15>x>=0 and 15>y>=0
+    
     def down_black_chess(self, x, y):
         y = self.__parser_y__(y)
         if not self.check_chess_valid(x,y):
