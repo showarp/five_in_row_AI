@@ -1,51 +1,40 @@
-# from stable_baselines3 import PPO
+from stable_baselines3 import PPO
 from gymnasium.envs.registration import register
 import gymnasium as gym
-from fir_env import FiveInRowEnv
 import numpy as np
 
 N_STEP          = 512
 BATCH_SIZE      = 512
 N_EPOCHS        = 4
-GAMMA           = 9.94
+GAMMA           = 0.94
 LEARNING_RATE   = 5e-4
+TEST_PLAYER     = 'human'#ai/human
 
+if TEST_PLAYER=="ai":
+    black_model_path = './model/black_model.zip'
+    black_model = PPO.load(black_model_path)
 register(
-    id="five_in_roll-v0",
-    entry_point="fir_env:FiveInRowEnv"
+    id="five_in_roll_black-v0",
+    entry_point="fir_env_black:FiveInRowBlackEnv"
 )
-env = gym.make("five_in_roll-v0")
-# model = PPO(    
-#     "CnnPolicy", 
-#     env,
-#     device="cuda")
 
-
-# model = model.load('./checkpoint/ppo_FIR_40000_steps.zip')
-
-for i in range(1):
-    state,info = env.reset()
+env = gym.make('five_in_roll_black-v0')
+obs,info = env.reset()
+env.render()
+done = False
+while not done:
+    if TEST_PLAYER=="ai":
+        print("\n\nAI VS AI")
+        input('回车以继续下一回合......')
+        action, _ = black_model.predict(observation=obs)
+    else:
+        print("\n\nHuman VS AI")
+        xy = input("输入落子点(例如 3J)：")
+        x,y = xy[:-1],xy[-1]
+        x,y = int(x),ord(y)-ord("A")
+        action = x*15+y%15
+    obs,reward,done,Terminated,info = env.step(action)
     env.render()
-    done = False
-    s = 0
-    while not done:
-        # if s%2==0:
-        #     x,y = input().split()
-        #     x = int(x)
-        #     y = ord(y)-ord("A")
-        #     action = np.zeros((2,15))
-        #     action[0][x] = 1
-        #     action[1][y] = 1
-        # else:
-            # action, _ = model.predict(observation=state)
-        # # s+=1
-        # action = env.action_space.sample()
-        # action, _ = model.predict(observation=state)
-        action = env.action_space.sample()
-        obs,reward,done,Terminated,info = env.step(action)
-        env.render()
-        print(reward)
-        input()
-        if done:break
+    print(reward)
+    if done:break
 env.close()
-print(reward)

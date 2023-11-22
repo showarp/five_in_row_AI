@@ -6,6 +6,10 @@ def get_scores(vecs,rating_table,ct):
     df_scores = 0
     pM,tM = ct,1 if ct==2 else 2
     for vec in vecs:
+        if 3 not in vec:continue
+        tempVceP,tempVceT = vec.copy(),vec.copy()
+        tempVceP[tempVceP==3]=pM
+        tempVceT[tempVceT==3]=tM
         admx = 0
         dfmx = 0
         for scores,mask in rating_table:
@@ -13,15 +17,15 @@ def get_scores(vecs,rating_table,ct):
             tMask = [tM if i==1 else 0 for i in mask]
             if len(pMask)>len(vec):continue
             for i in range(0,len(vec)-len(pMask)):
-                if all(vec[i:len(pMask)+i]==pMask):
+                if all(tempVceP[i:len(pMask)+i]==pMask):
                     admx = max(admx,scores)
-                if all(vec[i:len(tMask)+i]==tMask):
+                if all(tempVceT[i:len(tMask)+i]==tMask):
                     dfmx = max(dfmx,scores)
-        df_scores-=dfmx
+        df_scores+=dfmx
         ad_scores+=admx
     return ad_scores+df_scores
 
-def check_reward(board,ct):
+def check_reward(board,ct,x,y):
     """
     ct:落子的颜色黑/白 可选值1或2
 
@@ -47,7 +51,7 @@ def check_reward(board,ct):
         (720,[1,0,1,1,1]),
         (720,[1,1,1,0,1]),
     ]
-
+    board_b[x,y] = 3#标记落子点
     rowV = board_b
     colV = board_b.T
     diagMain = [np.diag(board_b,-14+i) for i in range(15*2)]
@@ -57,34 +61,3 @@ def check_reward(board,ct):
     digMScore = get_scores(diagMain,rating_table,ct=ct)
     digVScore = get_scores(diagVice,rating_table,ct=ct)
     return rowScore+colScore+digMScore+digVScore
-
-
-#测试样例
-
-# test_board = np.zeros((15,15))
-
-# test_board[5,5] = 1
-# test_board[5,6] = 1
-# test_board[5,7] = 1
-
-# test_board[5,10] = 2
-# test_board[5,11] = 2
-
-
-
-# separator_line = "  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+"  
-# s = f"   A B C D E F G H I J K L M N O \n{separator_line}\n"
-# for i in range(15):
-#     s += f"{i:>2}|"
-#     for j in range(15):
-#         if test_board[i, j] == 1.0:
-#             s += "○"  
-#         elif test_board[i, j] == 2.0:
-#             s += "●"  
-#         else:
-#             s += " "  
-#         s += "|"
-#     s += "\n" + separator_line + "\n"
-# print(s)
-# print("回报:",check_reward(test_board,2,2,1))
-

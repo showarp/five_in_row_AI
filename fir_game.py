@@ -7,6 +7,7 @@ class FirInRowGame:
         self.INVALID_CHANNEL    = 2
 
         self.chess_board = np.zeros((3, 15, 15),dtype=np.uint8)
+        self.chess_board[self.INDICATOR_CHANNEL] = 1
 
     def __str__(self):
         separator_line = "  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+"  
@@ -39,28 +40,29 @@ class FirInRowGame:
         y = self.__parser_y__(y)
         return self.chess_board[self.BOARD_CHANNEL,x,y]==0 and 15>x>=0 and 15>y>=0
     
+    def get_now_player(self):
+        return (self.chess_board[self.INDICATOR_CHANNEL] == 1).all()
+    
     def down_black_chess(self, x, y):
         y = self.__parser_y__(y)
+        self.step_log.append([x,y])
         if not self.check_chess_valid(x,y):
             return False
-        self.step_log.append([x,y])
         self.now_down = [x,y]
         self.chess_board[self.BOARD_CHANNEL, x, y] = 1.0
         self.chess_board[self.INDICATOR_CHANNEL] = 2
         self.chess_board[self.INVALID_CHANNEL, x, y] = 1.0
-        self.now_player = not self.now_player
         return True
 
     def down_white_chess(self, x, y):
         y = self.__parser_y__(y)
+        self.step_log.append([x,y])
         if not self.check_chess_valid(x,y):
             return False
-        self.step_log.append([x,y])
         self.now_down = [x,y]
         self.chess_board[self.BOARD_CHANNEL, x, y] = 2.0
         self.chess_board[self.INDICATOR_CHANNEL] = 1
         self.chess_board[self.INVALID_CHANNEL, x, y] = 1.0
-        self.now_player = not self.now_player
         return True
     
     def check_win(self):
@@ -90,8 +92,9 @@ class FirInRowGame:
                     return "Black wins" if 1.0 in [self.chess_board[self.BOARD_CHANNEL, i + 4 - k, j + k] for k in range(5)] else "White wins"
                 
     def play(self,x,y): 
+        if x==y==-1:return True
         is_valide = True
-        if self.now_player:
+        if self.get_now_player():
             is_valide = self.down_black_chess(x,y)
         else:
             is_valide = self.down_white_chess(x,y)
