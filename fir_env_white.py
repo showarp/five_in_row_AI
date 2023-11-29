@@ -24,10 +24,6 @@ class FiveInRowWhiteEnv(gym.Env,FirInRowGame):
         self.action_space = spaces.Discrete(15*15)
         if self.__check_exist_model():
             self.black_model = MaskablePPO.load(self.BLACK_MODEL_PATH)
-            print('=================================================')
-            print("load BLACK MODEL")
-            print('=================================================')
-
         else:
             self.random_think()
 
@@ -85,8 +81,10 @@ class FiveInRowWhiteEnv(gym.Env,FirInRowGame):
     def __get_obs(self):
         return np.pad(self.chess_board,[[0,0],[11,11],[11,11]])
 
+    def __get_truncations(self):
+        return len(self.step_log)>225
+
     def __get_done(self):
-        if len(self.step_log)>225:return True
         lastX,lastY = self.step_log[-1]
         if lastX==lastY==None:return False
         return self.check_win(lastX,lastY) in ["Black wins","White wins","Draw"]
@@ -120,8 +118,8 @@ class FiveInRowWhiteEnv(gym.Env,FirInRowGame):
         done = self.__get_done()
         is_valid = self.play(x,y)
         obs = self.__get_obs()
-        reward = self.__get_reward(not self.get_now_player(),x,y) if is_valid else -4320
-        truncations = False
+        reward = self.__get_reward(not self.get_now_player(),x,y)*(len(self.step_log)/113) if is_valid else -4320
+        truncations = self.__get_truncations()
         info = self.__get_info()
         if is_valid and not self.__check_exist_model():
             self.random_think()

@@ -32,10 +32,9 @@ while True:
         else:
             print("\n\nHuman VS AI")
             xy = input("输入落子点(例如 3J)：")
-            # x,y = xy[:-1],xy[-1]
-            # x,y = int(x),ord(y)-ord("A")
-            # action = x*15+y%15
-            action = env.action_space.sample()
+            x,y = xy[:-1],xy[-1]
+            x,y = int(x),ord(y)-ord("A")
+            action = x*15+y%15
         obs,reward,done,Terminated,info = env.step(action)
         env.render()
         print(reward)
